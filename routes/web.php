@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PagesController;
+use App\Http\Controllers\PostsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +15,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [PagesController::class, 'index']);
+Route::resource('/blog', PostsController::class);
+//authentication route
+Auth::routes();
+
+Route::get('/home', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+//comment sytsem
+Route::post('comments', [\App\Http\Controllers\CommentsController::class, 'store']);
+Route::post('delete-comment', [\App\Http\Controllers\CommentsController::class, 'destroy']);
+
