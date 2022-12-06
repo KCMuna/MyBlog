@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\PostsController;
@@ -26,3 +27,9 @@ Route::get('/home', [\App\Http\Controllers\HomeController::class, 'index'])->nam
 Route::post('comments', [\App\Http\Controllers\CommentsController::class, 'store']);
 Route::post('delete-comment', [\App\Http\Controllers\CommentsController::class, 'destroy']);
 
+Route::post('/add_comment', [PostsController::class, 'add_comment']);
+Route::post('/add_reply', [PostsController::class, 'add_reply']);
+Route::get('/delete_comment/{id?}', [PostsController::class, 'delete_comment'])->name('delete_comment');
+Route::get('/delete_reply/{id?}', [PostsController::class, 'delete_reply'])->name('delete_reply');
+
+Route::post('/like-post/{$post}', [HomeController::class, 'likePost'])->name('post.like')->middleware('auth');
