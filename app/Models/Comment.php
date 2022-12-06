@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Models;
-use App\Models\User;
 use App\Models\Post;
+use App\Models\User;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Reply;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Comment extends Model
 {
@@ -20,4 +21,5 @@ class Comment extends Model
     protected $fillable = ['post_id',
     'user_id',
     'comment_body'];
+    
 }

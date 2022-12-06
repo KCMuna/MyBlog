@@ -1,7 +1,7 @@
 @extends('layouts.app')
 <!-- CSS only -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
 @section('content')
     <div class="background-image grid grid-cols-1 m-auto">
         <div class="flex text-gray-100 pt-10">
@@ -107,48 +107,85 @@
             <a href="/blog/{{ $post->slug }}" class="uppercase bg-blue-500 text-gray-100 text-lg font-extrabold py-4 px-8 rounded-3xl">
                 Keep Reading
             </a>
-            <div class="comment-area mt-4">
+                {{-- likes and dislikes starts --}}
+                <div style="margin-left: 45%;">
+            @guest
+            <i class="fa fa-heart-o"aria-hidden="true"> </i> lily and 4 people like this
+        @else
+            
+                <a href="#" onclick="document.getElementById('like-form-{{ $post->id }}').submit();"><i class="fa fa-heart" aria-hidden="true" style="color:{{ Auth::user()->likedPosts()->where('post_id',$post->id)->count()>0?'red':'' }}" > </i> {{ $post->likedUsers->count() }}</a>
+               <p style="font-family: cursive">Total Likes</p>
+            
+            <form action="{{ route('post.like',$post->id) }}" method="POST" style="display: :none" id="like-form-{{ $post->id }}">
+                @csrf
+            </form>
 
-            @if(session('message'))
-                <h6 class="alert alert-warning mb-3">{{session('message')}}</h6>
-            @endif
-                <div class="card card-body">
-                    <h6 class="card-title">Leave a comment
-                    </h6>
-                    <form action="{{url ('comments') }}" method="post">
+    @endguest
+            </div>
+                {{-- likes and dislikes ends --}}
+
+            {{-- comment and reply system starts --}}
+            <div>
+                <h1 style="font-size: 25px; padding-top:20px;
+                padding-bottom:20px;">Comments</h1>
+                <form action="{{ url('add_comment') }}" method="post">
+                    @csrf
+                    <textarea style="height: 100px; width:350px;" placeholder="comment something here" name="comment">
+                    </textarea><br>
+                    <input type="submit" class="btn btn-primary" value="Comment">
+                </form>
+            </div>
+            <div style="padding-left: 20%">
+                <h1 style="font-size: 20px;
+                padding-bottom:20px;">All Comments</h1>
+                @foreach ($comment as $key=>$comment)
+                    <div>
+                        <b>{{++$key}}</b>
+                        <b>{{ $comment->name }}</b>
+                        <p>{{ $comment->comment }}</p>
+                        <a style="color:blue;" href="javascript::void(0);" onclick="reply(this)" data-Commentid="{{ $comment->id }}">Reply</a>
+                        <a href="#">Edit</a>
+                        <a style="color:red;" href="{{route('delete_comment').'/'.$comment->id}}">Delete</a>
+
+                        @foreach ($reply as $rep)
+                            @if($rep->comment_id==$comment->id)
+                                <div style="padding-left: 3%; padding-bottom:10px;">
+                                    <b>{{ $rep->name }}</b>
+                                    <p>{{ $rep->reply }}</p>
+                                    
+                                    <a style="color: blue" href="javascript::void(0);" onclick="reply(this)" data-Commentid="{{ $comment->id }}">Reply</a>
+                                    <a style="color:red;" href="{{route('delete_reply').'/'.$rep->id}}">Delete</a>
+
+                                </div>
+                            
+                            @endif
+                            
+                        @endforeach
+                        
+
+                    </div>
+                    
+                @endforeach
+               
+
+                {{-- reply text box --}}
+                
+                <div style="display: none" class="replyDiv">
+                    <form action="{{ url('add_reply') }}" method="post">
                         @csrf
-                        <input type="hidden" name="post_slug" value="{{ $post->slug }}">
-                        <textarea name="comment_body" class="form-control" rows="3" required></textarea>
-                        <button type="submit" class="btn btn-primary mt-3">
-                            Submit
-                        </button>
+                    
+                        <input type="text" id="commentId" name="commentId" hidden="">
+                        <textarea style="height:100px; width:350px;" name="reply" placeholder="write something here"></textarea>
+
+                        <input type="submit" value="reply" class="btn btn-warning ">
+
+                        <a href="javascript::void(0);" class="btn" onclick="reply_close(this)">Close</a>
                     </form>
                 </div>
             </div>
-            @forelse($post->comments as $comment)
 
-            <div class="comment-container card card-body shadow-sm mt-3">
-                <div class="detail-area">
-                    <h6 class="user-name mb-1">
-                        @if($comment->user)
-                            {{ $comment->user->name }}
-                        @endif
-                        <small class="ms-3 text-primary">Commented on: {{ $comment->created_at->format('d-m-Y')}}</small>
-                    </h6>
-                    <p class="user-comment mb-1">
-                        {!! $comment->comment_body !!}        
-                    </p>
-                </div>
-                @if(Auth::check() && Auth::id()==$comment->user_id)
-                <div>
-                    <!-- <a href="" class="btn btn-primary btn-sm me-2">Edit</a> -->
-                    <button type="button" value="{{$comment->id}}" class="deleteComment btn btn-danger btn-sm me-2">Delete</button>
-                </div>
-                @endif
-            </div>
-            @empty
-            <h6>NO Comments Yet</h6>
-            @endforelse
+            {{-- comment and reply system ends --}}
+           
         </div>
     </div>
 @endforeach
@@ -156,7 +193,22 @@
 
 @section('scripts')
 
- <script>
+<script type="text/javascript">
+    function reply(caller)
+    {
+        document.getElementById('commentId').value=$(caller).attr('data-Commentid');
+        $('.replyDiv').insertAfter($(caller));
+        $('.replyDiv').show();
+    }
+    function reply_close(caller)
+    {
+        $('.replyDiv').hide();
+    }
+
+    </script>
+
+
+ {{-- <script>
     $(document).ready(function(){
 
         $.ajaxSetup({
@@ -193,6 +245,16 @@
         });
 
     });
- </script>
+ </script> --}}
+ <script>
+    document.addEventListener("DOMContentLoaded", function(event) { 
+        var scrollpos = localStorage.getItem('scrollpos');
+        if (scrollpos) window.scrollTo(0, scrollpos);
+    });
+
+    window.onbeforeunload = function(e) {
+        localStorage.setItem('scrollpos', window.scrollY);
+    };
+</script>
 @endsection
 

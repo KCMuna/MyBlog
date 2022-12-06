@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;  
-use Illuminate\Http\Request;
 use App\Models\Post;
+use App\Models\Reply;
+use App\Models\Comment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Cviebrock\EloquentSluggable\Services\SlugService;
 
 
@@ -22,6 +25,7 @@ class PostsController extends Controller
         return view('blog.index')
         ->with('posts',Post::orderBy('updated_at','Desc')->get());
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -123,4 +127,67 @@ class PostsController extends Controller
         ->with('message','Your post has been deleted!');
 
     }
+
+    public function likePost($post)
+    {
+        //check if user already liked the post or not
+        $user = Auth::user();
+        $likePost = $user->likedPosts()->where('post_id', $post)->count();
+       if($likePost == 0){
+            $user->likedPosts()->attach($post);
+       }else{
+        $user->likedPosts()->detach($post);
+       }
+        return redirect()->back();
+    }
+
+    public function add_comment(Request $request){
+        if(Auth::id()){
+
+            $comment = new comment;
+            $comment->name = Auth::user()->name;
+            $comment->user_id = Auth::user()->id;
+            $comment->comment = $request->comment;
+
+            $comment->save();
+            return redirect()->back();
+        }
+        else{
+            return redirect('login');
+        }
+    }
+
+    public function add_reply(Request $request){
+        if(Auth::id()){
+            $reply = new reply;
+            $reply->name = Auth::user()->name;
+            $reply->comment_id = $request->commentId;
+            $reply->reply = $request->reply;
+            $reply->user_id = Auth::user()->id;
+            $reply->save();
+            return redirect()->back();
+
+        }else{
+            return redirect('login');
+        }
+
+    }
+    public function delete_reply($id)
+    {
+        $post=Reply::where('id',$id);
+        $post->delete();
+
+        return redirect()->back()->with('message','Your reply has been deleted!');
+
+    }
+    public function delete_comment($id)
+    {
+        $post=Comment::where('id',$id);
+        $post->delete();
+
+        return redirect()->back()->with('message','Your reply has been deleted!');
+
+    }
+
+
 }
