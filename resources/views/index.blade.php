@@ -110,8 +110,8 @@
                 {{-- likes and dislikes starts --}}
                 <div style="margin-left: 45%;">
             @guest
-            <i class="fa fa-heart-o"aria-hidden="true"> </i> lily and 4 people like this
-        @else
+                <i class="fa fa-heart-o"aria-hidden="true"> </i> lily and 4 people like this
+            @else
             
                 <a href="#" onclick="document.getElementById('like-form-{{ $post->id }}').submit();"><i class="fa fa-heart" aria-hidden="true" style="color:{{ Auth::user()->likedPosts()->where('post_id',$post->id)->count()>0?'red':'' }}" > </i> {{ $post->likedUsers->count() }}</a>
                <p style="font-family: cursive">Total Likes</p>
@@ -130,41 +130,41 @@
                 padding-bottom:20px;">Comments</h1>
                 <form action="{{ url('add_comment') }}" method="post">
                     @csrf
-                    <textarea style="height: 100px; width:350px;" placeholder="comment something here" name="comment">
-                    </textarea><br>
-                    <input type="submit" class="btn btn-primary" value="Comment">
+                    <div class="row">
+                        <div class="col-md-8">
+                    <textarea style="height: 80px; width:380px; border-radius:5px;" placeholder="comment something here" name="comment"></textarea><br>
+                </div>
+                <div class="col-md-4">
+                    <input style="margin-top:35px;" type="submit" class="btn btn-primary" value="Comment">
+                </div>
+                </div>
                 </form>
             </div>
-            <div style="padding-left: 20%">
-                <h1 style="font-size: 20px;
-                padding-bottom:20px;">All Comments</h1>
+            <div>
+                {{-- <h1 style="font-size: 15px;
+                padding-bottom:20px;">All Comments</h1> --}}
                 @foreach ($comment as $key=>$comment)
                     <div>
-                        <b>{{++$key}}</b>
+                        <b>{{++$key.'.'}}</b>
                         <b>{{ $comment->name }}</b>
                         <p>{{ $comment->comment }}</p>
-                        <a style="color:blue;" href="javascript::void(0);" onclick="reply(this)" data-Commentid="{{ $comment->id }}">Reply</a>
-                        <a href="#">Edit</a>
-                        <a style="color:red;" href="{{route('delete_comment').'/'.$comment->id}}">Delete</a>
+                        <a style="color:blue;font-size:14px; opacity:50%; font-style:italic;" href="javascript::void(0);" onclick="reply(this)" data-Commentid="{{ $comment->id }}">Reply</a>
+                        <a style="opacity:50%;font-size:14px; font-style:italic;" href="{{ route('edit_comment').'/'.$comment->id }}">Edit</a>
+                        <a style="color:red;opacity:50%; font-size:14px; font-style:italic;" onclick="return confirm('Are you sure you want to delete the comment?')" href="{{route('delete_comment').'/'.$comment->id}}">Delete</a><br>
 
                         @foreach ($reply as $rep)
                             @if($rep->comment_id==$comment->id)
                                 <div style="padding-left: 3%; padding-bottom:10px;">
                                     <b>{{ $rep->name }}</b>
                                     <p>{{ $rep->reply }}</p>
-                                    
-                                    <a style="color: blue" href="javascript::void(0);" onclick="reply(this)" data-Commentid="{{ $comment->id }}">Reply</a>
-                                    <a style="color:red;" href="{{route('delete_reply').'/'.$rep->id}}">Delete</a>
+                                    <a style="color: blue opacity:50%;font-size:14px; font-style:italic;" href="javascript::void(0);" onclick="reply(this)" data-Commentid="{{ $comment->id }}">Reply</a>
+                                    <a style="opacity:50%;font-size:14px; font-style:italic;" href="{{ route('edit_reply').'/'.$rep->id }}">Edit</a>
+                                    <a style="color:red;opacity:50%; font-size:14px; font-style:italic;" onclick="return confirm('Are you sure you want to delete the comment?')" href="{{route('delete_reply').'/'.$rep->id}}">Delete</a><br>
 
                                 </div>
-                            
                             @endif
-                            
                         @endforeach
-                        
-
                     </div>
-                    
                 @endforeach
                
 
